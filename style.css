@@ -68,16 +68,23 @@ h1 {
   font-family: 'Chrome 1';
 }
 
-.top-bar {
+/*.top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
   gap: 15px;
+}*/
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 /* Buttons */
-#showFormButton, #themeToggle {
+#showFormButton, #themeToggle, #downloadData {
   background-color: var(--button-bg);
   color: white;
   border: none;
@@ -89,7 +96,7 @@ h1 {
   font-size: 1rem;
 }
 
-#showFormButton:hover, #themeToggle:hover {
+#showFormButton:hover, #themeToggle:hover, #downloadData:hover {
   background-color: var(--button-hover);
   transform: translateY(-2px);
 }

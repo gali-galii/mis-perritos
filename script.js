@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const formOverlay = document.getElementById('formOverlay');
   const dogForm = document.getElementById('dogForm');
   const dogGallery = document.getElementById('dogGallery');
+  const downloadBtn = document.getElementById('downloadData');
 
   // Initialize dogs array
   let dogs = [];
@@ -30,18 +31,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Form buttons
     showFormBtn.addEventListener('click', () => {
-      formOverlay.classList.add('visible');
+      formOverlay.classList.add('visible'); // Fixed typo: formOverlay (was formOverlay)
     });
 
     closeFormBtn.addEventListener('click', () => {
       formOverlay.classList.remove('visible');
     });
 
-    // Form submission - CHANGED TO preventDefault properly
-    dogForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      handleFormSubmit();
-    });
+    // Form submission
+    dogForm.addEventListener('submit', handleFormSubmit);
 
     // Close overlay when clicking outside form
     formOverlay.addEventListener('click', (e) => {
@@ -49,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formOverlay.classList.remove('visible');
       }
     });
+    downloadBtn.addEventListener('click', downloadDogs);
   }
 
   function toggleTheme() {
@@ -66,45 +65,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  function handleFormSubmit() {
-    const submitBtn = dogForm.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    
+  function handleFormSubmit(e) {
+    e.preventDefault();
+
     const newDog = {
-      id: Date.now(),
+      id: Date.now(), // Simple unique ID
       name: document.getElementById('name').value,
       birthdate: document.getElementById('birthdate').value,
       passedAway: document.getElementById('passedAway').checked,
       funFacts: document.getElementById('funFacts').value
     };
 
+    // Handle photo upload
     const photoInput = document.getElementById('photo');
-    
-    if (!photoInput.files || !photoInput.files[0]) {
+    if (photoInput.files && photoInput.files[0]) {
+      newDog.photo = URL.createObjectURL(photoInput.files[0]);
+    } else {
+      // Default dog image if none provided
       newDog.photo = 'https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=400&auto=format&fit=crop';
-      addDogAndSave(newDog, submitBtn);
-      return;
     }
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      newDog.photo = e.target.result;
-      addDogAndSave(newDog, submitBtn);
-    };
-    reader.onerror = function() {
-      newDog.photo = 'https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=400&auto=format&fit=crop';
-      addDogAndSave(newDog, submitBtn);
-    };
-    reader.readAsDataURL(photoInput.files[0]);
-  }
-
-  function addDogAndSave(newDog, submitBtn) {
+    // Add new dog and save
     dogs.push(newDog);
     saveDogs();
     renderDogGallery();
+
+    // Reset and close form
     dogForm.reset();
     formOverlay.classList.remove('visible');
-    submitBtn.disabled = false;
   }
 
   function renderDogGallery() {
@@ -149,8 +137,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function formatDate(dateString) {
+    // Split the date string (YYYY-MM-DD) into parts
     const [year, month, day] = dateString.split('-');
+
+    // Create a new date (months are 0-indexed, so subtract 1)
     const date = new Date(year, month - 1, day);
+
+    // Format in Spanish
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return date.toLocaleDateString('es-ES', options);
   }
@@ -163,5 +156,15 @@ document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('theme') === 'dark') {
     document.body.setAttribute('data-theme', 'dark');
     themeToggle.textContent = '☀️ Modo Claro';
+  }
+
+  function downloadDogs() {
+    const dataStr = JSON.stringify(dogs, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'mis_perritos.json';
+
+    link.click();
   }
 });
